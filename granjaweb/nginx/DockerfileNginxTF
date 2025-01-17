@@ -1,0 +1,15 @@
+# Usar la imagen oficial de nginx
+FROM nginx:latest
+
+RUN mkdir -p /etc/nginx/ssl 
+
+# Copiar certificados SSL al contenedor 
+COPY ./certificados/certificado_pahere01.crt /etc/nginx/ssl/certificado_pahere01.crt 
+COPY ./certificados/certificado_pahere01.key /etc/nginx/ssl/certificado_pahere01.key 
+
+# Incluir configuración de Nginx para SSL 
+COPY ./nginx/nginx-ssl.conf /etc/nginx/nginx.conf 
+
+# Exponer el puerto HTTPS 
+EXPOSE 443 
+#EXPOSE 80

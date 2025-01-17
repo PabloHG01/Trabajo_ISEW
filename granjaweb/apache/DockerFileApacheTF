@@ -1,0 +1,64 @@
+# Usar Ubuntu 20.04 como imagen base
+FROM ubuntu:20.04
+
+# Establecer la zona horaria (opcional)
+ENV TZ=Europe/Madrid
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+# Actualiza repositorios e instala Apache, PHP, OpenSSL y herramientas necesarias
+RUN apt-get update && apt-get install -y \
+    apache2 \
+    php7.4 \
+    libapache2-mod-php7.4 \
+    iptables \
+    openssl \
+    net-tools \
+    iputils-ping \
+    curl \
+    && apt-get clean
+
+
+# Habilitar el módulo SSL de Apache
+RUN a2enmod ssl
+
+# Crear el directorio para los certificados SSL
+RUN mkdir -p /etc/apache2/ssl
+
+# Copiar el contenido del directorio web local al directorio raíz de Apache
+COPY ./web /var/www/html
+
+# Configurar Apache para que use el nuevo contenido
+RUN chown -R www-data:www-data /var/www/html && chmod -R 755 /var/www/html
+
+# Copiar los certificados SSL y la clave privada con los nombres adecuados
+COPY ./certificados/certificado_pahere01.crt /etc/apache2/ssl/certificado_pahere01.crt
+COPY ./certificados/certificado_pahere01.key /etc/apache2/ssl/certificado_pahere01.key
+
+# Copiar script de entrada entrypoint y script de reglas iptables
+COPY ./apache/iptables-web/entrypoint.sh /entrypoint.sh
+COPY ./apache/iptables-web/iptables-web.sh /pahere01-iptables-web.sh
+
+# Dar permisos de ejecución a los scripts
+RUN chmod +x /entrypoint.sh /pahere01-iptables-web.sh
+
+# Configurar el script de entrada
+ENTRYPOINT ["/entrypoint.sh"]
+
+# Asegurar los permisos adecuados en los archivos de certificado
+RUN chmod 600 /etc/apache2/ssl/certificado_pahere01.crt \
+    && chmod 600 /etc/apache2/ssl/certificado_pahere01.key
+
+# Copiar la configuración de SSL (tuusuariougr-ssl.conf) para habilitar el sitio HTTPS
+COPY ./apache/apache-ssl.conf /etc/apache2/sites-available/pahere01-ssl.conf
+
+# Habilitar el sitio SSL
+RUN a2ensite pahere01-ssl.conf
+
+# Exponer el puerto 443 para HTTPS
+EXPOSE 443
+
+# Exponer el puerto 80 para HTTP
+#EXPOSE 80
+
+# Comando para iniciar Apache en primer plano
+CMD ["apachectl", "-D", "FOREGROUND"]

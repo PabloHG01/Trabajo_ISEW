@@ -1,0 +1,202 @@
+
+services:
+  web1:
+    build:
+      context: .
+      dockerfile: apache/DockerFileApacheTF
+    container_name: web1
+    image: isew-pahere01-apache-image:TF
+    volumes:
+      - ./web:/var/www/html
+      - ./certificados:/etc/apache2/ssl
+    ports:
+      - 8081:443
+    networks:
+      red_web:
+        ipv4_address: 192.168.10.2
+      red_servicios:
+        ipv4_address: 192.168.20.2
+    cap_add:
+      - NET_ADMIN
+
+  web2:
+    build:
+      context: .
+      dockerfile: apache/DockerFileApacheTF
+    container_name: web2
+    image: isew-pahere01-apache-image:TF
+    volumes:
+      - ./web:/var/www/html
+      - ./certificados:/etc/apache2/ssl
+    ports:
+      - 8082:443
+    networks:
+      red_web:
+        ipv4_address: 192.168.10.3
+      red_servicios:
+        ipv4_address: 192.168.20.3
+    cap_add:
+      - NET_ADMIN
+
+  web3:
+    build:
+      context: .
+      dockerfile: apache/DockerFileApacheTF
+    container_name: web3
+    image: isew-pahere01-apache-image:TF
+    volumes:
+      - ./web:/var/www/html
+      - ./certificados:/etc/apache2/ssl
+    ports:
+      - 8083:443
+    networks:
+      red_web:
+        ipv4_address: 192.168.10.4
+      red_servicios:
+        ipv4_address: 192.168.20.4
+    cap_add:
+      - NET_ADMIN
+
+  web4:
+    build:
+      context: .
+      dockerfile: apache/DockerFileApacheTF
+    container_name: web4
+    image: isew-pahere01-apache-image:TF
+    volumes:
+      - ./web:/var/www/html
+      - ./certificados:/etc/apache2/ssl
+    ports:
+      - 8084:443
+    networks:
+      red_web:
+        ipv4_address: 192.168.10.5
+      red_servicios:
+        ipv4_address: 192.168.20.5
+    cap_add:
+      - NET_ADMIN
+
+  web5:
+    build:
+      context: .
+      dockerfile: apache/DockerFileApacheTF
+    container_name: web5
+    image: isew-pahere01-apache-image:TF
+    volumes:
+      - ./web:/var/www/html
+      - ./certificados:/etc/apache2/ssl
+    ports:
+      - 8085:443
+    networks:
+      red_web:
+        ipv4_address: 192.168.10.6
+      red_servicios:
+        ipv4_address: 192.168.20.6
+    cap_add:
+      - NET_ADMIN
+
+  web6:
+    build:
+      context: .
+      dockerfile: apache/DockerFileApacheTF
+    container_name: web6
+    image: isew-pahere01-apache-image:TF
+    volumes:
+      - ./web:/var/www/html
+      - ./certificados:/etc/apache2/ssl
+    ports:
+      - 8086:443
+    networks:
+      red_web:
+        ipv4_address: 192.168.10.7
+      red_servicios:
+        ipv4_address: 192.168.20.7
+    cap_add:
+      - NET_ADMIN
+
+  web7:
+    build:
+      context: .
+      dockerfile: apache/DockerFileApacheTF
+    container_name: web7
+    image: isew-pahere01-apache-image:TF
+    volumes:
+      - ./web:/var/www/html
+      - ./certificados:/etc/apache2/ssl
+    ports:
+      - 8087:443
+    networks:
+      red_web:
+        ipv4_address: 192.168.10.8
+      red_servicios:
+        ipv4_address: 192.168.20.8
+    cap_add:
+      - NET_ADMIN
+
+  web8:
+    build:
+      context: .
+      dockerfile: apache/DockerFileApacheTF
+    container_name: web8
+    image: isew-pahere01-apache-image:TF
+    volumes:
+      - ./web:/var/www/html
+      - ./certificados:/etc/apache2/ssl
+    ports:
+      - 8088:443
+    networks:
+      red_web:
+        ipv4_address: 192.168.10.9
+      red_servicios:
+        ipv4_address: 192.168.20.9
+    cap_add:
+      - NET_ADMIN
+
+  balanceador-nginx:
+    build:
+      context: .
+      dockerfile: nginx/DockerfileNginxTF
+    container_name: balanceador-nginx
+    image: isew-pahere01-nginx-image:TF
+    volumes:
+      - ./nginx/nginx-ssl.conf:/etc/nginx/nginx.conf
+      - ./certificados:/etc/nginx/ssl
+    ports:
+      - 443:443
+    networks:
+      red_web:
+        ipv4_address: 192.168.10.50
+    depends_on:
+      - web1
+      - web2
+      - web3
+      - web4
+      - web5
+      - web6
+      - web7
+      - web8
+
+  db:
+    image: mysql:latest
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: reservas
+      MYSQL_USER: user
+      MYSQL_PASSWORD: userpassword
+    volumes:
+      - ./database/db:/var/lib/mysql
+      - ./database/init_scripts:/docker-entrypoint-initdb.d
+    ports:
+      - 3306:3306
+    networks:
+      red_servicios:
+        ipv4_address: 192.168.20.10
+    restart: always
+
+
+networks:
+  red_web:
+    external: true
+  red_servicios:
+    external: true
